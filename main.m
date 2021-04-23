@@ -7,11 +7,14 @@ close all;
 clear all;
 clc;
 
+
+
 %% Read Image
 %I = imread('tulips.png');
-I = imread('alu.tiff');
+I = imread('alu.tif'); % will be padded if necessary
+ogIMG = I; % will be used for error calculation
 figure(1);
-subplot(1,2,1),imshow(I);
+subplot(2,2,1),imshow(I);
 
 %% pad the image to make pixels in multiples of 16
 [m,n,~]=size(I);
@@ -100,11 +103,15 @@ final_im = ycbcr2rgb(final_im);
 final_im = final_im((pad_x/2)+1:(pad_x/2)+m , (pad_y/2)+1:(pad_y/2)+n , :);
 
 figure(1);
-subplot(1,2,2),imshow(final_im);
+subplot(2,2,2),imshow(final_im);
 
 %imwrite(final_im,'tulips_new.png');
 imwrite(final_im,'alu_new.tif');
 
+%% Error calculations
+% this function returns the PSNR, displays the error map
+psnr = calculate_errors(ogIMG, final_im);
+disp("PSNR = "+psnr)
 function C = create_c_matrix(N)
     % N is the size of the NxN block being DCTed.
     % Create C
@@ -212,3 +219,32 @@ function [new_Im]=upSample420(I,V)
         r=r+1;
     end
 end
+
+function [psnr] = calculate_errors(ogIMG, finalIMG)
+    oR = ogIMG(:,:,1);
+    oG = ogIMG(:,:,2);
+    oB = ogIMG(:,:,3);
+    nR = finalIMG(:,:,1);
+    nG = finalIMG(:,:,2);
+    nB = finalIMG(:,:,3);
+    dR = (oR - nR).^2; % the delta between the two images, squared
+    dG = (oG - nG).^2;
+    dB = (oB - nB).^2;
+
+    mseMat = dR + dG + dB;
+    [m,n,~]=size(ogIMG);
+
+    totalError = sum( mseMat , 'all' );
+    totalPixels = m*n;
+    mse = totalPixels/totalError;
+    psnr = 20 * log10(255/sqrt(mse));
+    diffR = sqrt(double(dR));
+    diffG = sqrt(double(dG));
+    diffB = sqrt(double(dB));
+
+    diffImg = cat(3,diffR,diffG,diffB);
+%     diffImg = diffImg .* 20;
+    subplot(2,2,3),imshow(uint8(diffImg));
+end
+
+
