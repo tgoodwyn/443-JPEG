@@ -243,8 +243,10 @@ function [psnr] = calculate_errors(ogIMG, finalIMG)
     diffB = sqrt(double(dB));
 
     diffImg = cat(3,diffR,diffG,diffB);
-%     diffImg = diffImg .* 20;
-    subplot(2,2,3),imshow(uint8(diffImg));
+%     diffImg = uint8(diffImg);
+%     subplot(2,2,3),imshow(uint8(diffImg));
+    subplot(2,2,3),imagesc(diffImg);
+    colorbar;
 end
 
 
