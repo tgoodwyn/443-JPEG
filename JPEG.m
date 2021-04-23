@@ -226,31 +226,12 @@ function o=JPEG(image)
     end
 
     function [psnr] = calculate_errors(ogIMG, finalIMG)
-        oR = ogIMG(:,:,1);
-        oG = ogIMG(:,:,2);
-        oB = ogIMG(:,:,3);
-        nR = finalIMG(:,:,1);
-        nG = finalIMG(:,:,2);
-        nB = finalIMG(:,:,3);
-        dR = (oR - nR).^2; % the delta between the two images, squared
-        dG = (oG - nG).^2;
-        dB = (oB - nB).^2;
-
-        mseMat = dR + dG + dB;
-        [m,n,~]=size(ogIMG);
-
-        totalError = sum( mseMat , 'all' );
-        totalPixels = m*n;
-        mse = totalError/(3*totalPixels);
+        ogIMG = rgb2gray(ogIMG);
+        finalIMG = rgb2gray(finalIMG);
+        diffIMG = imabsdiff(ogIMG,finalIMG);
+        mse = immse(finalIMG, ogIMG);
         psnr = 20 * log10(255/sqrt(mse));
-        diffR = sqrt(double(dR));
-        diffG = sqrt(double(dG));
-        diffB = sqrt(double(dB));
-
-        diffImg = cat(3,diffR,diffG,diffB);
-    %     diffImg = uint8(diffImg);
-    %     subplot(2,2,3),imshow(uint8(diffImg));
-        subplot(2,2,3),imagesc(diffImg);
+        subplot(2,2,3),imagesc(diffIMG);
         colorbar;
     end
 end
