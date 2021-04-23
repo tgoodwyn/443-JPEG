@@ -236,7 +236,7 @@ function [psnr] = calculate_errors(ogIMG, finalIMG)
 
     totalError = sum( mseMat , 'all' );
     totalPixels = m*n;
-    mse = totalPixels/totalError;
+    mse = totalError/(3*totalPixel);
     psnr = 20 * log10(255/sqrt(mse));
     diffR = sqrt(double(dR));
     diffG = sqrt(double(dG));
