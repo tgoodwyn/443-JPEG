@@ -111,7 +111,8 @@ function o=JPEG(image)
 
     %imwrite(final_im,'tulips_new.png');
     imwrite(final_im,'alu_new.tif');
-
+    
+    o=final_im;
     %% Error calculations
     % this function returns the PSNR, displays the error map
     psnr = calculate_errors(ogIMG, final_im);
