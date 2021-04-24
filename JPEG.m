@@ -24,7 +24,7 @@ function o=JPEG(image)
     blockBeforeS1=I(1:8,1:8,:);
     blockBeforeS1
     figure(1);
-    subplot(3,3,2),imshow(blockBeforeS1),title("First 8x8 block before step 1");
+    subplot(3,3,2),imshow(blockBeforeS1),title("First 8x8 block before Step 1");
     f=split(image,".");
     imwrite(blockBeforeS1,append("input_",f(1),"_8x8_S1.png"));
 
