@@ -8,14 +8,14 @@
 
 function o=JPEG(image)
     close all;
-    clear all;
+    % clear all;
     clc;
 
 
 
     %% Read Image
     %I = imread('tulips.png');
-    I = imread('alu.tif'); % will be padded if necessary
+    I = imread(image); % will be padded if necessary
     ogIMG = I; % will be used for error calculation
     figure(1);
     subplot(2,2,1),imshow(I);
@@ -50,6 +50,7 @@ function o=JPEG(image)
     nnY = perform_dct(nY,C);
     nnCb = perform_dct(nCb,C);
     nnCr = perform_dct(nCr,C);
+    
 
     %% Quantization matrices
 
@@ -75,6 +76,7 @@ function o=JPEG(image)
     nnnY = perform_quantization(nnY,Y_Table);
     nnnCb = perform_quantization(nnCb,CbCr_Table);
     nnnCr = perform_quantization(nnCr,CbCr_Table);
+    
 
     %% Now performing all steps in reverse
     % Performing Inverse quantization
@@ -88,20 +90,25 @@ function o=JPEG(image)
     new_nnY = perform_inverse_dct(new_nnnY,C);
     new_nnCb = perform_inverse_dct(new_nnnCb,C);
     new_nnCr = perform_inverse_dct(new_nnnCr,C);
-
-
+    
+    
     %% Upsample from [m/2,n/2] to [m, n]
 
+    
     new_nY = new_nnY;
     new_nCb = upSample420(new_nnCb,[m+pad_x n+pad_y]);
     new_nCr = upSample420(new_nnCr,[m+pad_x n+pad_y]);
-
+    %new_nCb=imresize(new_nnCb,2,'bilinear');
+    %new_nCr=imresize(new_nnCr,2,'bilinear');
 
     %% Concatenating, and reconverting to RGB
 
+    
     final_im = cat(3,new_nY,new_nCb,new_nCr);
-    final_im = ycbcr2rgb(final_im);
+    final_im = ycbcr2rgb(final_im); 
+    
 
+    
     %% Removing padding
 
     final_im = final_im((pad_x/2)+1:(pad_x/2)+m , (pad_y/2)+1:(pad_y/2)+n , :);
@@ -121,14 +128,14 @@ function o=JPEG(image)
         % N is the size of the NxN block being DCTed.
         % Create C
         C = zeros(N,N);
-        for m = 0:1:N-1
-            for n = 0:1:N-1
-                if n == 0
+        for mm = 0:1:N-1
+            for nn = 0:1:N-1
+                if nn == 0
                 k = sqrt(1/N);
                 else
                 k = sqrt(2/N);
                 end
-            C(m+1,n+1) = k*cos( ((2*m+1)*n*pi) / (2*N));
+            C(mm+1,nn+1) = k*cos( ((2*mm+1)*nn*pi) / (2*N));
             end
         end
     end
@@ -137,21 +144,21 @@ function o=JPEG(image)
         % m = no of Rows
         % n= no of Columns
         I = double(I);
-        [m,n]=size(I);   
+        [mm,nn]=size(I);   
         r=1;
         %Downsample Image from [m,n] to [m/2,n/2] using Chroma 420 
-        for i=1:2:m-1
+        for i=1:2:mm-1
             c=1;
-            for j=1:2:n-1
+            for j=1:2:nn-1
                 new_Im(r,c)=(I(i,j)+I(i,j+1)+I(i+1,j)+I(i+1,j+1))/4;
                 c=c+1;
             end
             r=r+1;
         end
-        if((2*(r-1))~=m)
+        if((2*(r-1))~=mm)
             new_Im(r,:)=new_Im(r-1,:);
         end
-        if((2*(c-1))~=n)
+        if((2*(c-1))~=nn)
             new_Im(:,c)=new_Im(:,c+1);
         end
         new_Im = uint8(new_Im);
@@ -212,7 +219,7 @@ function o=JPEG(image)
         % Size of Input Image
         % m = no of Rows
         % n= no of Columns
-        [m,n]=size(I);   
+        [mm,nn]=size(I);   
         r=1;
         %Upsample Image from [m/2,n/2] to [m,n] 
         for i=1:V(1)
