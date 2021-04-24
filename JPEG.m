@@ -18,7 +18,15 @@ function o=JPEG(image)
     I = imread(image); % will be padded if necessary
     ogIMG = I; % will be used for error calculation
     figure(1);
-    subplot(2,2,1),imshow(I);
+    subplot(3,3,1),imshow(I),title("Original image");
+    
+    
+    blockBeforeS1=I(1:8,1:8,:);
+    blockBeforeS1
+    figure(1);
+    subplot(3,3,2),imshow(blockBeforeS1),title("First 8x8 block before step 1");
+    f=split(image,".");
+    imwrite(blockBeforeS1,append("input_",f(1),"_8x8_S1.png"));
 
     %% pad the image to make pixels in multiples of 16
     [m,n,~]=size(I);
@@ -77,7 +85,26 @@ function o=JPEG(image)
     nnnCb = perform_quantization(nnCb,CbCr_Table);
     nnnCr = perform_quantization(nnCr,CbCr_Table);
     
+    %% Output and show first 8x8 block after Step 1, only works if image is in same folder as code
+    
+    blockAfterS1=cat(3,nnnY(1:8,1:8),nnnCb(1:8,1:8),nnnCr(1:8,1:8));
+    blockAfterS1
+    fn=append("output_",f(1),"_8x8_S1.png");
+    imwrite(blockAfterS1,fn);
+    
+    figure(1)
+    subplot(3,3,3),imshow(blockAfterS1),title("First 8x8 block after S1");
 
+    %% Output and show image output by Step 1
+    
+    imageAfterS1=cat(3,nnnY,upSample420(nnnCb,[m+pad_x n+pad_y]),upSample420(nnnCr,[m+pad_x n+pad_y]));
+    fn=append(f(1),"_ImageAfterS1.png");
+    imwrite(imageAfterS1,fn);
+    
+    figure(1)
+    subplot(3,3,4),imshow(imageAfterS1),title("Image after Step 1");
+
+    
     %% Now performing all steps in reverse
     % Performing Inverse quantization
 
@@ -113,11 +140,21 @@ function o=JPEG(image)
 
     final_im = final_im((pad_x/2)+1:(pad_x/2)+m , (pad_y/2)+1:(pad_y/2)+n , :);
 
+    %% Show and output first 8x8 block after step 2 and final image
+    blockAfterS2=final_im(1:8,1:8,:);
+    blockAfterS2
+    
+    imwrite(blockAfterS2,append("output_",f(1),"_8x8_S2.png"));
+    
     figure(1);
-    subplot(2,2,2),imshow(final_im);
-
+    subplot(3,3,5),imshow(blockAfterS2),title("First 8x8 block after S2");
+    
+    
+    figure(1);
+    subplot(3,3,6),imshow(final_im),title("Image after Step 2/Final image");
+    
     %imwrite(final_im,'tulips_new.png');
-    imwrite(final_im,'alu_new.tif');
+    imwrite(final_im,append("output_",image,".png"));
     
     o=final_im;
     %% Error calculations
@@ -238,7 +275,7 @@ function o=JPEG(image)
         diffIMG = imabsdiff(ogIMG,finalIMG);
         mse = immse(finalIMG, ogIMG);
         psnr = 20 * log10(255/sqrt(mse));
-        subplot(2,2,3),imagesc(diffIMG);
+        subplot(3,3,7),imagesc(diffIMG);
         colorbar;
     end
 end
