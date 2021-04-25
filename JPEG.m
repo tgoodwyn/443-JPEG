@@ -21,6 +21,8 @@ function o=JPEG(image)
     subplot(3,3,1),imshow(I),title("Original image");
     
     
+    %% Output and show first 8x8 block before step 1
+    
     blockBeforeS1=I(1:8,1:8,:);
     blockBeforeS1
     figure(1);
