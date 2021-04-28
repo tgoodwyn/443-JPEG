@@ -65,7 +65,7 @@ function o=JPEG(image)
     nCb=downSample420(I2(:,:,2));
     nCr=downSample420(I2(:,:,3));
     
-    %% Output and show first 8x8 block after step 2
+    %% Output first 8x8 block and image after step 2, also show first 8x8 block after step 2
     imAfterS2=cat(3,nY,nCb,nCr);
     imwrite(imAfterS2,append("output_",f(1),"_S2.png"));
     blockAfterS2=imAfterS2(1:8,1:8,:);
@@ -83,17 +83,16 @@ function o=JPEG(image)
     nnCb = perform_dct(nCb,C);
     nnCr = perform_dct(nCr,C);
     
-    %% Output and show first 8x8 block after step 3
-    blockAfterS3=cat(3,nnY,nnCb,nnCr);
-    blockAfterS3=blockAfterS3(1:8,1:8,:);
+    %% Output first 8x8 block and image after step 3, also show first 8x8 block after step 3
+    imAfterS3=cat(3,nnY,nnCb,nnCr);
+    imwrite(imAfterS3,append("output_",f(1),"_S3.png"));
+    blockAfterS3=imAfterS3(1:8,1:8,:);
     blockAfterS3(:,:,1)
     figure(1);
     subplot(4,3,5),imshow(blockAfterS3),title("First 8x8 block after S3");
     imwrite(blockAfterS3,append("output_",f(1),"_8x8_S3.png"));
     
-    %% Output image after step 3
-    imAfterStep3=cat(3,nnY,nnCb,nnCr);
-    imwrite(imAfterStep3,append("output_",f(1),"_S3.png"));
+    
     %% Quantization matrices
 
     Y_Table=[16 11  10  16 24  40  51 61
@@ -120,17 +119,15 @@ function o=JPEG(image)
     nnnCr = perform_quantization(nnCr,CbCr_Table);
     
     
-    %% Output and show first 8x8 block after step 4
-    blockAfterS4=cat(3,nnnY,nnnCb,nnnCr);
-    blockAfterS4=blockAfterS4(1:8,1:8,:);
+    %% Output first 8x8 block and image after step 4, also show first 8x8 block after step 4
+    imAfterS4=cat(3,nnnY,nnnCb,nnnCr);
+    imwrite(imAfterS4,append("output_",f(1),"_S4.png"));
+    blockAfterS4=imAfterS4(1:8,1:8,:);
     blockAfterS4(:,:,1)
     figure(1);
     subplot(4,3,6),imshow(blockAfterS4),title("First 8x8 block after S4");
     imwrite(blockAfterS4,append("output_",f(1),"_8x8_S4.png"));
     
-    %% Output image after step 4
-    imAfterS4=cat(3,nnnY,nnnCb,nnnCr);
-    imwrite(imAfterS4,append("output_",f(1),"_S4.png"));
     
     %% Output and show image output by major Step 1
     %{
@@ -150,9 +147,10 @@ function o=JPEG(image)
     new_nnnCr = perform_inverse_quantization(nnnCr,CbCr_Table);
     
     
-    %% Output and show first 8x8 block after step 5
-    blockAfterS5=cat(3,new_nnnY,new_nnnCb,new_nnnCr);
-    blockAfterS5=blockAfterS5(1:8,1:8,:);
+    %% Output first 8x8 block and image after step 5, also show first 8x8 block after step 5
+    imAfterS5=cat(3,new_nnnY,new_nnnCb,new_nnnCr);
+    imwrite(imAfterS5,append("output_",f(1),"_S5.png"));
+    blockAfterS5=imAfterS5(1:8,1:8,:);
     blockAfterS5(:,:,1)
     figure(1);
     subplot(4,3,7),imshow(blockAfterS5),title("First 8x8 block after S5");
@@ -164,9 +162,10 @@ function o=JPEG(image)
     new_nnCr = perform_inverse_dct(new_nnnCr,C);
     
     
-    %% Output and show first 8x8 block after step 6
-    blockAfterS6=cat(3,new_nnY,new_nnCb,new_nnCr);
-    blockAfterS6=blockAfterS6(1:8,1:8,:);
+    %% Output first 8x8 block and image after step 6, also show first 8x8 block after step 6
+    imAfterS6=cat(3,new_nnY,new_nnCb,new_nnCr);
+    imwrite(imAfterS6,append("output_",f(1),"_S6.png"));
+    blockAfterS6=imAfterS6(1:8,1:8,:);
     blockAfterS6(:,:,1)
     figure(1);
     subplot(4,3,8),imshow(blockAfterS6),title("First 8x8 block after S6");
@@ -190,6 +189,7 @@ function o=JPEG(image)
     
     
     %% Output and show first 8x8 block after step 7
+
     blockAfterS7=final_im(1:8,1:8,:);
     blockAfterS7(:,:,1)
     figure(1);
