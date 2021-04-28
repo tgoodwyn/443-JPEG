@@ -56,6 +56,9 @@ function o=JPEG(image)
     subplot(4,3,3),imshow(blockAfterS1),title("First 8x8 block after S1");
     imwrite(blockAfterS1,append("output_",f(1),"_8x8_S1.png"));
     
+    %% Output image after step 1
+    imwrite(I2,append("output_",f(1),"_S1.png"));
+    
     %% Perform chroma subsampling 4:2:0 on color components Cb and Cr individually
     % Downsample from [m,n] to [m/2, n/2]
     nY = I2(:,:,1);
@@ -63,12 +66,17 @@ function o=JPEG(image)
     nCr=downSample420(I2(:,:,3));
     
     %% Output and show first 8x8 block after step 2
-    blockAfterS2=cat(3,nY,upSample420(nCb,[m+pad_x n+pad_y]),upSample420(nCr,[m+pad_x n+pad_y]));
+    blockAfterS2=cat(3,nY,nCb,nCr);
     blockAfterS2=blockAfterS2(1:8,1:8,:);
     blockAfterS2(:,:,1)
     figure(1);
     subplot(4,3,4),imshow(blockAfterS2),title("First 8x8 block after S2");
     imwrite(blockAfterS2,append("output_",f(1),"_8x8_S2.png"));
+    
+    %% Output image after step 2
+    imafters2=cat(3,nY,nCb,nCr);
+    
+    
     %% Performing dct in blocks of 8x8
     % 8 is the size of the 8x8 block being DCTed.
     C = create_c_matrix(8);
