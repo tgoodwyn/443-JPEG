@@ -180,7 +180,7 @@ function o=JPEG(image)
     %% Show and output first 8x8 block after step 2 and final image
     
     figure(1);
-    subplot(4,3,10),imshow(final_im),title("Image after Step 2/Final image");
+    subplot(4,3,10),imshow(final_im),title("Final image");
     
     %imwrite(final_im,'tulips_new.png');
     imwrite(final_im,append("output_",image,".png"));
