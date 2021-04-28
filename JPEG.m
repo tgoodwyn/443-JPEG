@@ -49,6 +49,7 @@ function o=JPEG(image)
     %figure(2);
     %imshow(I2);
     
+    %% Output and show first 8x8 block after step 1
     blockAfterS1=I2(1:8,1:8,:);
     blockAfterS1(:,:,1)
     figure(1);
@@ -60,7 +61,8 @@ function o=JPEG(image)
     nY = I2(:,:,1);
     nCb=downSample420(I2(:,:,2));
     nCr=downSample420(I2(:,:,3));
-
+    
+    %% Output and show first 8x8 block after step 2
     blockAfterS2=cat(3,nY,upSample420(nCb,[m+pad_x n+pad_y]),upSample420(nCr,[m+pad_x n+pad_y]));
     blockAfterS2=blockAfterS2(1:8,1:8,:);
     blockAfterS2(:,:,1)
@@ -75,6 +77,7 @@ function o=JPEG(image)
     nnCb = perform_dct(nCb,C);
     nnCr = perform_dct(nCr,C);
     
+    %% Output and show first 8x8 block after step 3
     blockAfterS3=cat(3,nnY,upSample420(nnCb,[m+pad_x n+pad_y]),upSample420(nnCr,[m+pad_x n+pad_y]));
     blockAfterS3=blockAfterS3(1:8,1:8,:);
     blockAfterS3(:,:,1)
@@ -108,6 +111,8 @@ function o=JPEG(image)
     nnnCb = perform_quantization(nnCb,CbCr_Table);
     nnnCr = perform_quantization(nnCr,CbCr_Table);
     
+    
+    %% Output and show first 8x8 block after step 4
     blockAfterS4=cat(3,nnnY,upSample420(nnnCb,[m+pad_x n+pad_y]),upSample420(nnnCr,[m+pad_x n+pad_y]));
     blockAfterS4=blockAfterS4(1:8,1:8,:);
     blockAfterS4(:,:,1)
@@ -131,7 +136,9 @@ function o=JPEG(image)
     new_nnnY = perform_inverse_quantization(nnnY,Y_Table);
     new_nnnCb = perform_inverse_quantization(nnnCb,CbCr_Table);
     new_nnnCr = perform_inverse_quantization(nnnCr,CbCr_Table);
-
+    
+    
+    %% Output and show first 8x8 block after step 5
     blockAfterS5=cat(3,new_nnnY,upSample420(new_nnnCb,[m+pad_x n+pad_y]),upSample420(new_nnnCr,[m+pad_x n+pad_y]));
     blockAfterS5=blockAfterS5(1:8,1:8,:);
     blockAfterS5(:,:,1)
@@ -144,6 +151,8 @@ function o=JPEG(image)
     new_nnCb = perform_inverse_dct(new_nnnCb,C);
     new_nnCr = perform_inverse_dct(new_nnnCr,C);
     
+    
+    %% Output and show first 8x8 block after step 6
     blockAfterS6=cat(3,new_nnY,upSample420(new_nnCb,[m+pad_x n+pad_y]),upSample420(new_nnCr,[m+pad_x n+pad_y]));
     blockAfterS6=blockAfterS6(1:8,1:8,:);
     blockAfterS6(:,:,1)
@@ -167,6 +176,8 @@ function o=JPEG(image)
     final_im = cat(3,new_nnY,new_nnCb,new_nnCr);
     final_im = ycbcr2rgb(final_im); 
     
+    
+    %% Output and show first 8x8 block after step 7
     blockAfterS7=final_im(1:8,1:8,:);
     blockAfterS7(:,:,1)
     figure(1);
