@@ -18,18 +18,10 @@ function o=JPEG(image)
     I = imread(image); % will be padded if necessary
     ogIMG = I; % will be used for error calculation
     figure(1);
-    subplot(3,3,1),imshow(I),title("Original image");
+    subplot(4,3,1),imshow(I),title("Original image");
     
     
-    %% Output and show first 8x8 block before step 1
     
-    blockBeforeS1=I(1:8,1:8,:);
-    blockBeforeS1
-    figure(1);
-    subplot(3,3,2),imshow(blockBeforeS1),title("First 8x8 block before Step 1");
-    f=split(image,".");
-    imwrite(blockBeforeS1,append("input_",f(1),"_8x8_S1.png"));
-
     %% pad the image to make pixels in multiples of 16
     [m,n,~]=size(I);
     pad_x = rem(m,16);
@@ -41,18 +33,40 @@ function o=JPEG(image)
         pad_y = 16 - pad_y;
     end
     I = padarray(I,[pad_x/2 pad_y/2 0],'replicate','both');
+    
+    %% Output and show first 8x8 block before step 1
+    
+    blockBeforeS1=I(1:8,1:8,:);
+    blockBeforeS1(:,:,1)
+    figure(1);
+    subplot(4,3,2),imshow(blockBeforeS1),title("First 8x8 block before Step 1");
+    f=split(image,".");
+    imwrite(blockBeforeS1,append("input_",f(1),"_8x8_S1.png"));
+
 
     %% convert image to YCbCr format
     I2 = rgb2ycbcr(I);
     %figure(2);
     %imshow(I2);
-
+    
+    blockAfterS1=I2(1:8,1:8,:);
+    blockAfterS1(:,:,1)
+    figure(1);
+    subplot(4,3,3),imshow(blockAfterS1),title("First 8x8 block after S1");
+    imwrite(blockAfterS1,append("output_",f(1),"_8x8_S1.png"));
+    
     %% Perform chroma subsampling 4:2:0 on color components Cb and Cr individually
     % Downsample from [m,n] to [m/2, n/2]
     nY = I2(:,:,1);
     nCb=downSample420(I2(:,:,2));
     nCr=downSample420(I2(:,:,3));
 
+    blockAfterS2=cat(3,nY,upSample420(nCb,[m+pad_x n+pad_y]),upSample420(nCr,[m+pad_x n+pad_y]));
+    blockAfterS2=blockAfterS2(1:8,1:8,:);
+    blockAfterS2(:,:,1)
+    figure(1);
+    subplot(4,3,4),imshow(blockAfterS2),title("First 8x8 block after S2");
+    imwrite(blockAfterS2,append("output_",f(1),"_8x8_S2.png"));
     %% Performing dct in blocks of 8x8
     % 8 is the size of the 8x8 block being DCTed.
     C = create_c_matrix(8);
@@ -61,7 +75,14 @@ function o=JPEG(image)
     nnCb = perform_dct(nCb,C);
     nnCr = perform_dct(nCr,C);
     
-
+    blockAfterS3=cat(3,nnY,upSample420(nnCb,[m+pad_x n+pad_y]),upSample420(nnCr,[m+pad_x n+pad_y]));
+    blockAfterS3=blockAfterS3(1:8,1:8,:);
+    blockAfterS3(:,:,1)
+    figure(1);
+    subplot(4,3,5),imshow(blockAfterS3),title("First 8x8 block after S3");
+    imwrite(blockAfterS3,append("output_",f(1),"_8x8_S3.png"));
+    
+    
     %% Quantization matrices
 
     Y_Table=[16 11  10  16 24  40  51 61
@@ -87,25 +108,22 @@ function o=JPEG(image)
     nnnCb = perform_quantization(nnCb,CbCr_Table);
     nnnCr = perform_quantization(nnCr,CbCr_Table);
     
-    %% Output and show first 8x8 block after Step 1, only works if image is in same folder as code
+    blockAfterS4=cat(3,nnnY,upSample420(nnnCb,[m+pad_x n+pad_y]),upSample420(nnnCr,[m+pad_x n+pad_y]));
+    blockAfterS4=blockAfterS4(1:8,1:8,:);
+    blockAfterS4(:,:,1)
+    figure(1);
+    subplot(4,3,6),imshow(blockAfterS4),title("First 8x8 block after S4");
+    imwrite(blockAfterS4,append("output_",f(1),"_8x8_S4.png"));
     
-    blockAfterS1=cat(3,nnnY(1:8,1:8),nnnCb(1:8,1:8),nnnCr(1:8,1:8));
-    blockAfterS1
-    fn=append("output_",f(1),"_8x8_S1.png");
-    imwrite(blockAfterS1,fn);
-    
-    figure(1)
-    subplot(3,3,3),imshow(blockAfterS1),title("First 8x8 block after S1");
-
     %% Output and show image output by Step 1
-    
+    %{
     imageAfterS1=cat(3,nnnY,upSample420(nnnCb,[m+pad_x n+pad_y]),upSample420(nnnCr,[m+pad_x n+pad_y]));
     fn=append(f(1),"_ImageAfterS1.png");
     imwrite(imageAfterS1,fn);
     
     figure(1)
     subplot(3,3,4),imshow(imageAfterS1),title("Image after Step 1");
-
+    %}
     
     %% Now performing all steps in reverse
     % Performing Inverse quantization
@@ -114,46 +132,55 @@ function o=JPEG(image)
     new_nnnCb = perform_inverse_quantization(nnnCb,CbCr_Table);
     new_nnnCr = perform_inverse_quantization(nnnCr,CbCr_Table);
 
+    blockAfterS5=cat(3,new_nnnY,upSample420(new_nnnCb,[m+pad_x n+pad_y]),upSample420(new_nnnCr,[m+pad_x n+pad_y]));
+    blockAfterS5=blockAfterS5(1:8,1:8,:);
+    blockAfterS5(:,:,1)
+    figure(1);
+    subplot(4,3,7),imshow(blockAfterS5),title("First 8x8 block after S5");
+    imwrite(blockAfterS5,append("output_",f(1),"_8x8_S5.png"));
     %% Performing Inverse DCT
 
     new_nnY = perform_inverse_dct(new_nnnY,C);
     new_nnCb = perform_inverse_dct(new_nnnCb,C);
     new_nnCr = perform_inverse_dct(new_nnnCr,C);
     
-    
+    blockAfterS6=cat(3,new_nnY,upSample420(new_nnCb,[m+pad_x n+pad_y]),upSample420(new_nnCr,[m+pad_x n+pad_y]));
+    blockAfterS6=blockAfterS6(1:8,1:8,:);
+    blockAfterS6(:,:,1)
+    figure(1);
+    subplot(4,3,8),imshow(blockAfterS6),title("First 8x8 block after S6");
+    imwrite(blockAfterS2,append("output_",f(1),"_8x8_S6.png"));
     %% Upsample from [m/2,n/2] to [m, n]
 
     
-    new_nY = new_nnY;
-    new_nCb = upSample420(new_nnCb,[m+pad_x n+pad_y]);
-    new_nCr = upSample420(new_nnCr,[m+pad_x n+pad_y]);
+    %new_nY = new_nnY;
+    %new_nCb = upSample420(new_nnCb,[m+pad_x n+pad_y]);
+    %new_nCr = upSample420(new_nnCr,[m+pad_x n+pad_y]);
+    
+    
     %new_nCb=imresize(new_nnCb,2,'bilinear');
     %new_nCr=imresize(new_nnCr,2,'bilinear');
 
     %% Concatenating, and reconverting to RGB
 
     
-    final_im = cat(3,new_nY,new_nCb,new_nCr);
+    final_im = cat(3,new_nnY,new_nnCb,new_nnCr);
     final_im = ycbcr2rgb(final_im); 
     
-
+    blockAfterS7=final_im(1:8,1:8,:);
+    blockAfterS7(:,:,1)
+    figure(1);
+    subplot(4,3,9),imshow(blockAfterS7),title("First 8x8 block after S7");
+    imwrite(blockAfterS2,append("output_",f(1),"_8x8_S7.png"));
     
     %% Removing padding
 
     final_im = final_im((pad_x/2)+1:(pad_x/2)+m , (pad_y/2)+1:(pad_y/2)+n , :);
 
     %% Show and output first 8x8 block after step 2 and final image
-    blockAfterS2=final_im(1:8,1:8,:);
-    blockAfterS2
-    
-    imwrite(blockAfterS2,append("output_",f(1),"_8x8_S2.png"));
     
     figure(1);
-    subplot(3,3,5),imshow(blockAfterS2),title("First 8x8 block after S2");
-    
-    
-    figure(1);
-    subplot(3,3,6),imshow(final_im),title("Image after Step 2/Final image");
+    subplot(4,3,10),imshow(final_im),title("Image after Step 2/Final image");
     
     %imwrite(final_im,'tulips_new.png');
     imwrite(final_im,append("output_",image,".png"));
@@ -179,28 +206,32 @@ function o=JPEG(image)
         end
     end
     function [new_Im]=downSample420(I)
-        % Size of Input Image
-        % m = no of Rows
-        % n= no of Columns
-        I = double(I);
-        [mm,nn]=size(I);   
-        r=1;
-        %Downsample Image from [m,n] to [m/2,n/2] using Chroma 420 
-        for i=1:2:mm-1
-            c=1;
-            for j=1:2:nn-1
-                new_Im(r,c)=(I(i,j)+I(i,j+1)+I(i+1,j)+I(i+1,j+1))/4;
-                c=c+1;
-            end
-            r=r+1;
-        end
-        if((2*(r-1))~=mm)
-            new_Im(r,:)=new_Im(r-1,:);
-        end
-        if((2*(c-1))~=nn)
-            new_Im(:,c)=new_Im(:,c+1);
-        end
-        new_Im = uint8(new_Im);
+         new_Im=I;
+         [rows,cols,~]=size(new_Im);
+         for i=1:2:rows % for every 2x4 block of pixels
+           for j=1:4:cols % for every 2x4 block of pixels 
+              if (i+1<=rows && j+3<=cols)  % if the block fits within the bounds of the image
+                  new_Im(i,j+1)=new_Im(i,j); % sets the Cr value of the 2nd pixel of the top row to the Cr value of the 1st pixel of the top row
+                  new_Im(i,j+3)=new_Im(i,j+2); % sets the Cr value of the 4th pixel of the top row to the Cr value of the 3rd pixel of the top row
+                  new_Im(i+1,j)=new_Im(i,j); % sets the Cr value of the 1st pixel of the bottom row to the Cr value of the 1st pixel of the top row
+                  new_Im(i+1,j+1)=new_Im(i,j); % sets the Cr value of the 2nd pixel of the bottom row to the Cr value of the 1st pixel of the top row
+                  new_Im(i+1,j+2)=new_Im(i,j+2); % sets the Cr value of the 3rd pixel of the bottom row to the Cr value of the 3rd pixel of the top row
+                  new_Im(i+1,j+3)=new_Im(i,j+2); % sets the Cr value of the 4th pixel of the bottom row to the Cr value of the 3rd pixel of the top row
+              elseif (i==rows && j+3<=cols) % if only a 1x4 block fits
+                  new_Im(i,j+1)=new_Im(i,j);
+                  new_Im(i,j+3)=new_Im(i,j+2);
+              elseif (i+1<=rows && j+1<=cols) % if only a 2x2 or 2x3 block fits
+                  new_Im(i,j+1)=new_Im(i,j);
+                  new_Im(i+1,j)=new_Im(i,j);
+                  new_Im(i+1,j+1)=new_Im(i,j);
+              elseif (i==rows && j+1<=cols) % if only a 1x2 or 1x3 block fits
+                  new_Im(i,j+1)=new_Im(i,j);
+              elseif (i+1<=rows) % if only a 2x1 block fits
+                  new_Im(i+1,j)=new_Im(i,j);
+              end
+           end
+         end
+        new_Im=uint8(new_Im);
     end
     function [new_Im]=perform_dct(I,C)
 
@@ -277,7 +308,7 @@ function o=JPEG(image)
         diffIMG = imabsdiff(ogIMG,finalIMG);
         mse = immse(finalIMG, ogIMG);
         psnr = 20 * log10(255/sqrt(mse));
-        subplot(3,3,7),imagesc(diffIMG);
+        subplot(4,3,11),imagesc(diffIMG);
         colorbar;
     end
 end
