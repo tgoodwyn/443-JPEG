@@ -330,6 +330,7 @@ function o=JPEG(image)
         finalIMG = rgb2gray(finalIMG);
         diffIMG = imabsdiff(ogIMG,finalIMG);
         mse = immse(finalIMG, ogIMG);
+        disp("MSE = " + mse);
         psnr = 20 * log10(255/sqrt(mse));
         subplot(4,3,11),imagesc(diffIMG);
         colorbar;
